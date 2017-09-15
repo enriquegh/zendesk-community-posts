@@ -12,6 +12,7 @@ username = os.environ.get('ZENDESK_USERNAME')
 password = os.environ.get('ZENDESK_PASSWORD')
 
 
+
 def get_recent_posts_json():
     "Obtain recent posts sorted by recent activity"
 
@@ -34,7 +35,7 @@ def check_last_update_date(posts):
 
         time_difference =  datetime_now - datetime_last_update
 
-        if time_difference.days < 8:
+        if time_difference.days < 8 and post['status'] is "none":
             recent_posts.append(post)
             # print time_difference.days
             # post_id = post['id']
