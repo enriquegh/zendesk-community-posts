@@ -25,6 +25,8 @@ def get_recent_posts_json():
 
 def check_last_update_date(posts):
 
+    recent_posts = []
+
     for post in posts:
         last_update = post['updated_at']
         datetime_last_update = datetime.datetime.strptime(last_update,'%Y-%m-%dT%H:%M:%SZ')
@@ -33,11 +35,12 @@ def check_last_update_date(posts):
         time_difference =  datetime_now - datetime_last_update
 
         if time_difference.days < 8:
-
-            print time_difference.days
-            post_id = post['id']
-            print post_id
-            print check_last_commenter(post_id)
+            recent_posts.append(post)
+            # print time_difference.days
+            # post_id = post['id']
+            # print post_id
+            # print check_last_commenter(post_id)
+    return recent_posts
 
 def check_last_commenter(id):
 
@@ -48,6 +51,13 @@ def check_last_commenter(id):
     load = json.loads(response)
 
     return load['comments'][0]
+
+def is_comment_by_agent(agent_ids, comment):
+
+    author_id = comment['author_id']
+    if author_id not in agent_ids:
+        print comment['html_url']
+        print "WE NEED TO ANSWEEERRR!!"
 
 
 def get_agents_ids():
@@ -83,9 +93,13 @@ def send_request(endpoint, method, username=None, password=None):
 
 def main():
     posts = get_recent_posts_json()
-    check_last_update_date(posts)
-    # agents = get_agents_ids()
-    # print agents
+    recent_posts = check_last_update_date(posts)
+    agent_ids = get_agents_ids()
+
+    if recent_posts:
+        for post in recent_posts:
+            comment = check_last_commenter(post['id'])
+            is_comment_by_agent(agent_ids, comment)
 
 if __name__ == '__main__':
     main()
