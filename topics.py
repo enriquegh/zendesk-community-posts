@@ -92,7 +92,7 @@ def send_request(endpoint, method, username=None, password=None):
         user_pass = base64.b64encode("{}:{}".format(username, password))
         headers = {'Authorization' : 'Basic {}'.format(user_pass)}
 
-    status, response = http_conn.request(url, method=method, headers=headers)
+    status, response = http_conn.request(url, method=method, headers=headers) #TODO: Check status code and throw error
     logger.debug("Status: %s",status)
 
     return response
