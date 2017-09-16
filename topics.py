@@ -5,12 +5,13 @@ import httplib2
 import json
 import datetime
 import os
-
+import logging
 
 URL_BASE = "https://saucelabs.zendesk.com/api/v2/"
 username = os.environ.get('ZENDESK_USERNAME')
 password = os.environ.get('ZENDESK_PASSWORD')
 
+logger = logging.getLogger(__name__)
 
 
 def get_recent_posts_json():
@@ -18,6 +19,7 @@ def get_recent_posts_json():
 
     endpoint =  "help_center/community/posts.json?sort_by=recent_activity"
 
+    logger.info("Sending %s request to Zendesk",endpoint)
     response = send_request(endpoint, "GET")
 
     load = json.loads(response) 
@@ -57,13 +59,14 @@ def is_comment_by_agent(agent_ids, comment):
 
     author_id = comment['author_id']
     if author_id not in agent_ids:
-        print comment['html_url']
-        print "WE NEED TO ANSWEEERRR!!"
+        logger.info("Post needs answering: %s", comment['html_url'])
 
 
 def get_agents_ids():
 
     endpoint = "users.json?role=agent"
+
+    logger.info("Sending %s request to Zendesk",endpoint)
     response = send_request(endpoint, "GET", username, password)
 
     load = json.loads(response)
@@ -79,6 +82,7 @@ def send_request(endpoint, method, username=None, password=None):
 
     headers = None
     url = URL_BASE + endpoint
+    logger.debug("Sending request to: %s", url)
 
     http_conn = httplib2.Http()
 
@@ -88,14 +92,21 @@ def send_request(endpoint, method, username=None, password=None):
         user_pass = base64.b64encode("{}:{}".format(username, password))
         headers = {'Authorization' : 'Basic {}'.format(user_pass)}
 
-    _, response = http_conn.request(url, method=method, headers=headers)
+    status, response = http_conn.request(url, method=method, headers=headers)
+    logger.debug("Status: %s",status)
 
     return response
 
 def main():
+
+    logger.info("Getting recent posts")
     posts = get_recent_posts_json()
+    logger.info("Checking recently upated posts")
+
     recent_posts = check_last_update_date(posts)
+    logger.info("Getting agent ID's")
     agent_ids = get_agents_ids()
+    logger.debug("Agent ID's: %s", agent_ids)
 
     if recent_posts:
         for post in recent_posts:
