@@ -3,6 +3,7 @@ import os
 import logging
 import json
 
+
 logger = logging.getLogger(__name__)
 
 message = {
@@ -18,7 +19,7 @@ message = {
 
 SLACK_WEBHOOK = os.environ.get('SLACK_WEBHOOK')
 
-def send_request():
+def send_request(message):
 
     headers = {'Content-type' : 'application/json'}
     url = SLACK_WEBHOOK
